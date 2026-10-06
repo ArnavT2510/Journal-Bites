@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bite Log – Restaurant Tracker</title>
+<style>
+:root{--bg:#faf6f1;--card:#fff;--ink:#2b2420;--mute:#7a6f66;--line:#e8dfd5;--acc:#d9531e;--good:#2e7d4f;--bad:#c0392b;--mid:#b7791f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1816;--card:#26211e;--ink:#f3ece5;--mute:#a99d92;--line:#3a332e;--acc:#ff7a45;--good:#5cc489;--bad:#ff7b6b;--mid:#e3b55c}}
+:root[data-theme="dark"]{--bg:#1c1816;--card:#26211e;--ink:#f3ece5;--mute:#a99d92;--line:#3a332e;--acc:#ff7a45;--good:#5cc489;--bad:#ff7b6b;--mid:#e3b55c}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+main{max-width:720px;margin:0 auto;padding:20px 16px 80px}
+h1{margin:0 0 4px;font-size:1.7rem}
+.sub{color:var(--mute);margin:0 0 16px}
+input,textarea,button,select{font:inherit;color:inherit}
+input[type=text],input[type=date],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+button{cursor:pointer;border:1px solid var(--line);background:var(--card);padding:9px 14px;border-radius:10px}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button.link{border:0;background:none;color:var(--acc);padding:4px 0}
+.row{display:flex;gap:10px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.rest{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.rest b{font-size:1.05rem}
+.mute{color:var(--mute);font-size:.9rem}
+.stars{color:var(--mid);letter-spacing:2px;white-space:nowrap}
+h2{font-size:1.05rem;margin:22px 0 4px}
+h2.good{color:var(--good)}h2.bad{color:var(--bad)}h2.mid{color:var(--mid)}
+.dish{display:flex;gap:12px}
+.dish img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex:none}
+.dish .body{flex:1;min-width:0}
+.top{display:flex;justify-content:space-between;gap:8px}
+form label{display:block;margin:12px 0 4px;font-weight:600;font-size:.9rem}
+.starpick button{border:0;background:none;font-size:2rem;padding:0 4px;color:var(--line);line-height:1}
+.starpick button.on{color:var(--mid)}
+#preview{max-width:100%;max-height:200px;border-radius:10px;margin-top:8px;display:none}
+.empty{text-align:center;color:var(--mute);padding:30px 10px}
+.hide{display:none}
+.ai{border-color:var(--acc)}
+.ai textarea{margin:8px 0}
+.ai button:disabled{opacity:.6;cursor:wait}
+.aitext{margin-top:10px;line-height:1.55}
+</style>
+</head>
+<body>
+<main>
+  <div id="home">
+    <h1>🍽️ Bite Log</h1>
+    <p class="sub">Remember what you ate, loved, and never want again.</p>
+    <div class="row">
+      <input type="text" id="search" placeholder="Search a restaurant, e.g. Cheesecake Factory" autocomplete="off">
+      <button class="primary" id="addBtn">+ Add</button>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div id="detail" class="hide"></div>
+
+  <div id="formView" class="hide">
+    <button class="link" id="cancel">← Back</button>
+    <h1>Log a dish</h1>
+    <form id="form" onsubmit="return false">
+      <label for="fRest">Restaurant</label>
+      <input type="text" id="fRest" list="restNames" placeholder="Cheesecake Factory" required>
+      <datalist id="restNames"></datalist>
+      <label for="fDish">Dish</label>
+      <input type="text" id="fDish" placeholder="Chicken Madeira" required>
+      <label>Rating</label>
+      <div class="starpick" id="starpick"></div>
+      <label for="fDate">Date visited</label>
+      <input type="date" id="fDate">
+      <label for="fNotes">Notes (optional)</label>
+      <textarea id="fNotes" rows="3" placeholder="Too salty, great sauce..."></textarea>
+      <label for="fPhoto">Photo (optional)</label>
+      <input type="file" id="fPhoto" accept="image/*">
+      <img id="preview" alt="Preview">
+      <p id="err" class="mute" style="color:var(--bad)"></p>
+      <button class="primary" id="save" style="width:100%;margin-top:8px">Save dish</button>
+    </form>
+  </div>
+</main>
+
+<script>
+(function(){
+var KEY="bitelog:v1", entries=[], rating=0, photo="";
+var $=function(i){return document.getElementById(i)};
+function load(){try{var r=localStorage.getItem(KEY);entries=r?JSON.parse(r):[]}catch(e){entries=[]}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(entries));return true}catch(e){$("err").textContent="Could not save (storage full?). Try a smaller photo.";return false}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function stars(n){return "★".repeat(n)+"☆".repeat(5-n)}
+function key(n){return n.trim().toLowerCase()}
+function show(v){["home","detail","formView"].forEach(function(x){$(x).classList.toggle("hide",x!==v)});window.scrollTo(0,0)}
+
+function groups(){
+  var g={};
+  entries.forEach(function(e){var k=key(e.restaurant);(g[k]=g[k]||{name:e.restaurant,items:[]}).items.push(e)});
+  return Object.keys(g).map(function(k){return g[k]}).sort(function(a,b){return a.name.localeCompare(b.name)});
+}
+function renderList(){
+  var q=key($("search").value), gs=groups().filter(function(g){return !q||key(g.name).indexOf(q)>-1});
+  $("restNames").innerHTML=groups().map(function(g){return '<option value="'+esc(g.name)+'">'}).join("");
+  if(!gs.length){
+    $("list").innerHTML='<div class="empty">'+(entries.length?'No restaurant matches “'+esc($("search").value)+'”.':'No dishes logged yet.<br>Tap <b>+ Add</b> to log your first one.<br><br><button id="sample">Load sample data</button>')+'</div>';
+    var s=$("sample");if(s)s.onclick=sample;return;
+  }
+  $("list").innerHTML=gs.map(function(g){
+    var avg=g.items.reduce(function(a,e){return a+e.rating},0)/g.items.length;
+    return '<div class="card rest" data-k="'+esc(key(g.name))+'"><div><b>'+esc(g.name)+'</b><div class="mute">'+g.items.length+' dish'+(g.items.length>1?'es':'')+' logged</div></div><div class="stars">'+stars(Math.round(avg))+'</div></div>';
+  }).join("");
+  Array.prototype.forEach.call($("list").querySelectorAll(".rest"),function(el){el.onclick=function(){openRest(el.getAttribute("data-k"))}});
+}
+function dishCard(e){
+  return '<div class="card dish">'+(e.photo?'<img src="'+e.photo+'" alt="'+esc(e.dish)+'">':'')+
+  '<div class="body"><div class="top"><b>'+esc(e.dish)+'</b><span class="stars">'+stars(e.rating)+'</span></div>'+
+  '<div class="mute">'+esc(e.date||"")+'</div>'+(e.notes?'<div>'+esc(e.notes)+'</div>':'')+
+  '<button class="link" data-del="'+e.id+'">Delete</button></div></div>';
+}
+function openRest(k){
+  var items=entries.filter(function(e){return key(e.restaurant)===k});
+  if(!items.length){show("home");renderList();return}
+  items.sort(function(a,b){return b.rating-a.rating||(b.date||"").localeCompare(a.date||"")});
+  var name=items[0].restaurant;
+  var sec=[["good","❤️ Loved it (4–5★)",function(e){return e.rating>=4}],["mid","😐 It was okay (3★)",function(e){return e.rating===3}],["bad","👎 Didn't like (1–2★)",function(e){return e.rating<=2}]];
+  var html='<button class="link" id="back">← All restaurants</button><h1>'+esc(name)+'</h1><p class="sub">What you’ve had here: '+items.length+' dish'+(items.length>1?'es':'')+'</p><button class="primary" id="addHere">+ Log another dish</button><div class="card ai"><b>✨ What should I order?</b><div class="mute">Gemini reads your ratings and notes. Paste the menu for the best results, or leave it empty and it will try to look the menu up.</div><textarea id="menuTxt" rows="3" placeholder="Paste menu items here (optional)"></textarea><button class="primary" id="aiBtn">Get suggestions</button><div id="aiOut"></div></div>';
+  sec.forEach(function(s){var l=items.filter(s[2]);if(l.length)html+='<h2 class="'+s[0]+'">'+s[1]+'</h2>'+l.map(dishCard).join("")});
+  $("detail").innerHTML=html;show("detail");
+  $("back").onclick=function(){show("home");renderList()};
+  $("addHere").onclick=function(){openForm(name)};
+  $("aiBtn").onclick=function(){suggest(name,items)};
+  Array.prototype.forEach.call($("detail").querySelectorAll("[data-del]"),function(b){b.onclick=function(){
+    if(!confirm("Delete this dish?"))return;
+    entries=entries.filter(function(e){return String(e.id)!==b.getAttribute("data-del")});persist();openRest(k)}});
+}
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")}
+function suggest(name,items){
+  var out=$("aiOut"),btn=$("aiBtn");
+  btn.disabled=true;out.innerHTML='<p class="mute">Gemini is thinking…</p>';
+  fetch("/api/suggest",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    restaurant:name,menu:$("menuTxt").value,
+    dishes:items.map(function(e){return {dish:e.dish,rating:e.rating,notes:e.notes}})})})
+  .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||"failed");return j})})
+  .then(function(j){out.innerHTML='<div class="aitext">'+fmt(j.text)+'</div><p class="mute">AI can make mistakes. Check the real menu and allergens.</p>'})
+  .catch(function(){
+    var good=items.filter(function(e){return e.rating>=4}).map(function(e){return e.dish}),
+        bad=items.filter(function(e){return e.rating<=2}).map(function(e){return e.dish});
+    out.innerHTML='<div class="aitext"><p class="mute">AI suggestions are unavailable right now. Here is your history:</p><b>Order again:</b> '+(good.length?esc(good.join(", ")):"nothing rated 4+ yet")+'<br><b>Skip:</b> '+(bad.length?esc(bad.join(", ")):"nothing rated 2 or below")+'</div>'})
+  .then(function(){btn.disabled=false});
+}
+function drawStars(){
+  $("starpick").innerHTML=[1,2,3,4,5].map(function(n){return '<button type="button" data-n="'+n+'" class="'+(n<=rating?"on":"")+'" aria-label="'+n+' stars">★</button>'}).join("");
+  Array.prototype.forEach.call($("starpick").querySelectorAll("button"),function(b){b.onclick=function(){rating=+b.getAttribute("data-n");drawStars()}});
+}
+function openForm(name){
+  $("form").reset();rating=0;photo="";$("preview").style.display="none";$("err").textContent="";
+  $("fRest").value=name||"";$("fDate").value=new Date().toISOString().slice(0,10);
+  drawStars();show("formView");
+}
+$("fPhoto").onchange=function(ev){
+  var f=ev.target.files[0];if(!f){photo="";$("preview").style.display="none";return}
+  var r=new FileReader();
+  r.onload=function(){var im=new Image();im.onload=function(){
+    var m=720,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
+    c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    photo=c.toDataURL("image/jpeg",0.7);$("preview").src=photo;$("preview").style.display="block"};
+    im.src=r.result};
+  r.readAsDataURL(f);
+};
+$("save").onclick=function(){
+  var rest=$("fRest").value.trim(),dish=$("fDish").value.trim();
+  if(!rest||!dish){$("err").textContent="Please enter a restaurant and a dish.";return}
+  if(!rating){$("err").textContent="Please tap a star rating.";return}
+  entries.push({id:Date.now()+Math.floor(Math.random()*1000),restaurant:rest,dish:dish,rating:rating,notes:$("fNotes").value.trim(),date:$("fDate").value,photo:photo});
+  if(persist())openRest(key(rest));
+};
+$("addBtn").onclick=function(){openForm($("search").value)};
+$("cancel").onclick=function(){show("home");renderList()};
+$("search").oninput=renderList;
+function sample(){
+  var d=new Date().toISOString().slice(0,10),id=Date.now();
+  [["Cheesecake Factory","Chicken Madeira",5,"Amazing sauce, order it again."],["Cheesecake Factory","Avocado Egg Rolls",4,"Great starter to share."],["Cheesecake Factory","Pasta Napoletana",2,"Bland and heavy."],["Cheesecake Factory","Fresh Strawberry Cheesecake",5,"Worth saving room."],["Chipotle","Burrito Bowl",3,"Fine, nothing special."]].forEach(function(x,i){
+    entries.push({id:id+i,restaurant:x[0],dish:x[1],rating:x[2],notes:x[3],date:d,photo:""})});
+  persist();renderList();
+}
+load();renderList();
+})();
+</script>
+</body>
+</html>
