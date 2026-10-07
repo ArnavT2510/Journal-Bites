@@ -15,7 +15,7 @@ HTML, CSS, JavaScript, localStorage, Canvas API, Vercel serverless function (Nod
 ## Run / deploy
 1. Get a Gemini API key at https://aistudio.google.com/app/apikey
 2. Push this folder to GitHub, then import the repo in Vercel (no build settings needed).
-3. In Vercel: Settings → Environment Variables → add `GEMINI_API_KEY` (optional: `GEMINI_MODEL`, default `gemini-3.7-flash`; `ENABLE_SEARCH=false` to turn off web search). Redeploy.
+3. In Vercel: Settings → Environment Variables → add `GEMINI_API_KEY` (optional: `GEMINI_MODEL` sets the preferred model; the function automatically uses `gemini-3.1-flash-lite` by default and retries with `gemini-3.5-flash-lite` if it is overloaded; `ENABLE_SEARCH=false` turns off web search, recommended on a free-tier key). Redeploy.
 4. Local testing: `npx vercel dev` (with `GEMINI_API_KEY` set in a `.env` file). Never commit your key.
 
 ## Notes
