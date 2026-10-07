@@ -19,10 +19,10 @@
 // --- Gemini ---
 // Set LLM_PROVIDER=gemini (or leave unset), GEMINI_API_KEY, and
 // ENABLE_SEARCH=false on a free-tier key (search grounding isn't free).
-// gemini-3.1-flash-lite is cheap ($0.25/$1.50 per 1M tokens) with a decent
-// free tier (15 RPM / 500 req/day). gemini-3.8-flash is Google's current
-// recommended model ($0.75/$3.75). NOTE: Google retired the 2.5 series for
-// new users (gemini-2.5-flash-lite / gemini-2.5-flash now return 404).
+// gemini-3.1-flash-lite and gemini-3.5-flash-lite are the budget picks
+// ($0.25/$1.50 and $0.30/$2.50 per 1M tokens) with 15 RPM / 500 req/day
+// each on the free tier. NOTE: Google retired the 2.5 series for new
+// users (gemini-2.5-flash-lite / gemini-2.5-flash now return 404).
 
 const PROVIDER = (process.env.LLM_PROVIDER || "gemini").trim().toLowerCase();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
