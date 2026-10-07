@@ -3,64 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bite Log – Restaurant Tracker</title>
+<meta name="color-scheme" content="dark">
+<title>Bite Log – Your dining journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#faf6f1;--card:#fff;--ink:#2b2420;--mute:#7a6f66;--line:#e8dfd5;--acc:#d9531e;--good:#2e7d4f;--bad:#c0392b;--mid:#b7791f}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1816;--card:#26211e;--ink:#f3ece5;--mute:#a99d92;--line:#3a332e;--acc:#ff7a45;--good:#5cc489;--bad:#ff7b6b;--mid:#e3b55c}}
-:root[data-theme="dark"]{--bg:#1c1816;--card:#26211e;--ink:#f3ece5;--mute:#a99d92;--line:#3a332e;--acc:#ff7a45;--good:#5cc489;--bad:#ff7b6b;--mid:#e3b55c}
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#0C171A;--card:#142A2F;--card2:#1A343A;--line:#244047;--ink:#EAF1EF;--mute:#8FA8A8;--gold:#E8B04B;--goldink:#1A1405;--good:#7FC8A9;--mid:#E8B04B;--bad:#E58A97;--err:#FF8A8A}
+:root{box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
-main{max-width:720px;margin:0 auto;padding:20px 16px 80px}
-h1{margin:0 0 4px;font-size:1.7rem}
-.sub{color:var(--mute);margin:0 0 16px}
-input,textarea,button,select{font:inherit;color:inherit}
-input[type=text],input[type=date],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
-button{cursor:pointer;border:1px solid var(--line);background:var(--card);padding:9px 14px;border-radius:10px}
-button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
-button.link{border:0;background:none;color:var(--acc);padding:4px 0}
+body{margin:0;background:radial-gradient(900px 420px at 85% -10%,rgba(232,176,75,.10),transparent 60%),var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;min-height:100vh}
+h1,h2,h3,.brand{font-family:"Fraunces",Georgia,"Times New Roman",serif;font-weight:700;margin:0;line-height:1.12}
+input,textarea,button{font:inherit;color:inherit}
+header.top{position:sticky;top:0;z-index:5;background:rgba(12,23,26,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.bar{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{font-size:1.25rem;cursor:pointer;color:var(--gold)}
+nav{display:flex;gap:4px;align-items:center}
+nav button{border:0;background:none;padding:8px 12px;border-radius:8px;color:var(--mute);font-weight:500}
+nav button.on{color:var(--ink);background:var(--card)}
+nav button.cta{background:var(--gold);color:var(--goldink);font-weight:700;margin-left:4px}
+main{max-width:760px;margin:0 auto;padding:24px 16px 80px}
+button{cursor:pointer;border:1px solid var(--line);background:var(--card);padding:10px 18px;border-radius:10px;font-weight:500}
+button:hover{border-color:var(--mute)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button.primary{background:var(--gold);border-color:var(--gold);color:var(--goldink);font-weight:700}
+button.link{border:0;background:none;color:var(--gold);padding:6px 0}
+button:disabled{opacity:.6;cursor:wait}
+input[type=text],input[type=date],textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input::placeholder,textarea::placeholder{color:#5F7878}
 .row{display:flex;gap:10px;align-items:center}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
-.rest{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
-.rest b{font-size:1.05rem}
-.mute{color:var(--mute);font-size:.9rem}
-.stars{color:var(--mid);letter-spacing:2px;white-space:nowrap}
-h2{font-size:1.05rem;margin:22px 0 4px}
-h2.good{color:var(--good)}h2.bad{color:var(--bad)}h2.mid{color:var(--mid)}
-.dish{display:flex;gap:12px}
-.dish img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex:none}
-.dish .body{flex:1;min-width:0}
-.top{display:flex;justify-content:space-between;gap:8px}
-form label{display:block;margin:12px 0 4px;font-weight:600;font-size:.9rem}
-.starpick button{border:0;background:none;font-size:2rem;padding:0 4px;color:var(--line);line-height:1}
-.starpick button.on{color:var(--mid)}
-#preview{max-width:100%;max-height:200px;border-radius:10px;margin-top:8px;display:none}
-.empty{text-align:center;color:var(--mute);padding:30px 10px}
+.mute{color:var(--mute);font-size:.92rem}
 .hide{display:none}
-.ai{border-color:var(--acc)}
-.ai textarea{margin:8px 0}
-.ai button:disabled{opacity:.6;cursor:wait}
-.aitext{margin-top:10px;line-height:1.55}
+.hello h1{font-size:clamp(2.2rem,7vw,3.4rem);margin:18px 0 12px}
+.hello p.lead{font-size:1.1rem;color:var(--mute);max-width:46ch;margin:0 0 22px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.actions button{padding:12px 22px}
+#nameBox{margin:18px 0;max-width:340px}
+h3{font-size:1.05rem;margin:30px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.rest{display:flex;gap:14px;align-items:center;cursor:pointer}
+.rest:hover{border-color:var(--gold)}
+.rb{flex:1;min-width:0}
+.rb b{font-weight:700}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#0C171A;flex:none;font-family:"Fraunces",Georgia,serif}
+.stars{color:var(--gold);letter-spacing:2px;white-space:nowrap}
+.head{margin:6px 0 18px}
+.head h1{font-size:2.3rem}
+.head p{margin:6px 0 14px}
+h2{font-size:1.1rem;margin:26px 0 4px;display:flex;align-items:center;gap:8px}
+h2::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+h2.good{color:var(--good)}h2.mid{color:var(--mid)}h2.bad{color:var(--bad)}
+.dish{display:flex;gap:14px}
+.dish img{width:96px;height:96px;object-fit:cover;border-radius:10px;flex:none}
+.dish .body{flex:1;min-width:0}
+.top2{display:flex;justify-content:space-between;gap:8px}
+form label{display:block;margin:16px 0 6px;font-weight:700}
+.starpick button{border:0;background:none;font-size:2.3rem;padding:0 4px;color:var(--line);line-height:1}
+.starpick button.on{color:var(--gold)}
+.rlabel{color:var(--gold);min-height:1.5em;font-weight:500}
+#drop{border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--mute);background:var(--bg)}
+#drop.over{border-color:var(--gold);color:var(--ink)}
+#preview{max-width:100%;max-height:220px;border-radius:10px;margin-top:10px;display:none}
+.empty{text-align:center;color:var(--mute);padding:34px 10px}
+.ai{border-color:var(--gold);background:var(--card2)}
+.ai .tag{color:var(--gold);font-weight:700}
+.ai input{margin:10px 0}
+.aitext{margin-top:12px;line-height:1.65}
+.aitext p{margin:0}
+.sugg{width:100%;height:56px;border:0;margin-top:6px;background:#fff;border-radius:8px}
+.ai a{color:var(--gold)}
+#err{color:var(--err);min-height:1.2em}
+@media (max-width:480px){nav button{padding:8px 8px;font-size:.9rem}}
 </style>
 </head>
 <body>
+<header class="top"><div class="bar">
+  <div class="brand" id="brand">Bite Log</div>
+  <nav>
+    <button data-v="welcome" id="nHome">Home</button>
+    <button data-v="home" id="nList">Restaurants</button>
+    <button class="cta" id="nAdd">+ Log dish</button>
+  </nav>
+</div></header>
 <main>
-  <div id="home">
-    <h1>🍽️ Bite Log</h1>
-    <p class="sub">Remember what you ate, loved, and never want again.</p>
-    <div class="row">
-      <input type="text" id="search" placeholder="Search a restaurant, e.g. Cheesecake Factory" autocomplete="off">
-      <button class="primary" id="addBtn">+ Add</button>
+  <section id="welcome" class="hello">
+    <h1 id="greet">Welcome.</h1>
+    <p class="lead">Your private dining journal. Log what you ordered, rate it, and let Gemini look up the menu and suggest what to try next.</p>
+    <div class="actions">
+      <button class="primary" id="wLog">Log a dish</button>
+      <button id="wBrowse">Browse restaurants</button>
     </div>
+    <div class="mute" id="stats"></div>
+    <div id="nameBox" class="hide">
+      <label class="mute" for="nameIn" style="font-weight:400;margin:0 0 6px">What should we call you? (optional)</label>
+      <div class="row"><input type="text" id="nameIn" placeholder="Your first name"><button id="nameSave">Save</button></div>
+    </div>
+    <div id="recent"></div>
+    <div id="sampleW"></div>
+  </section>
+
+  <section id="home" class="hide">
+    <div class="head"><h1>Restaurants</h1></div>
+    <input type="text" id="search" placeholder="Search a restaurant, e.g. Cheesecake Factory" autocomplete="off">
     <div id="list"></div>
-  </div>
+  </section>
 
-  <div id="detail" class="hide"></div>
+  <section id="detail" class="hide"></section>
 
-  <div id="formView" class="hide">
+  <section id="formView" class="hide">
     <button class="link" id="cancel">← Back</button>
-    <h1>Log a dish</h1>
+    <div class="head"><h1>Log a dish</h1></div>
     <form id="form" onsubmit="return false">
       <label for="fRest">Restaurant</label>
       <input type="text" id="fRest" list="restNames" placeholder="Cheesecake Factory" required>
@@ -69,105 +122,164 @@ form label{display:block;margin:12px 0 4px;font-weight:600;font-size:.9rem}
       <input type="text" id="fDish" placeholder="Chicken Madeira" required>
       <label>Rating</label>
       <div class="starpick" id="starpick"></div>
+      <div class="rlabel" id="rlabel"></div>
       <label for="fDate">Date visited</label>
       <input type="date" id="fDate">
       <label for="fNotes">Notes (optional)</label>
-      <textarea id="fNotes" rows="3" placeholder="Too salty, great sauce..."></textarea>
-      <label for="fPhoto">Photo (optional)</label>
-      <input type="file" id="fPhoto" accept="image/*">
-      <img id="preview" alt="Preview">
-      <p id="err" class="mute" style="color:var(--bad)"></p>
-      <button class="primary" id="save" style="width:100%;margin-top:8px">Save dish</button>
+      <textarea id="fNotes" rows="3" placeholder="Rich sauce, a little salty..."></textarea>
+      <label>Photo (optional)</label>
+      <div id="drop" tabindex="0">
+        <div id="dropTxt">Paste an image (Ctrl/⌘ + V), drop one here, or</div>
+        <button type="button" id="pick" style="margin-top:8px">Choose a photo</button>
+        <input type="file" id="fPhoto" accept="image/*" class="hide">
+        <img id="preview" alt="Photo preview">
+        <div><button type="button" class="link hide" id="rmPhoto">Remove photo</button></div>
+      </div>
+      <p id="err"></p>
+      <button class="primary" id="save" style="width:100%;padding:14px">Save dish</button>
     </form>
-  </div>
+  </section>
 </main>
 
 <script>
 (function(){
-var KEY="bitelog:v1", entries=[], rating=0, photo="";
+var KEY="bitelog:v1",entries=[],rating=0,photo="";
 var $=function(i){return document.getElementById(i)};
-function load(){try{var r=localStorage.getItem(KEY);entries=r?JSON.parse(r):[]}catch(e){entries=[]}}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(entries));return true}catch(e){$("err").textContent="Could not save (storage full?). Try a smaller photo.";return false}}
+function sget(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function sset(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
+function load(){try{entries=JSON.parse(sget(KEY)||"[]")}catch(e){entries=[]}}
+function persist(){if(!sset(KEY,JSON.stringify(entries))){$("err").textContent="Could not save (storage may be full). Try a smaller photo.";return false}return true}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function stars(n){return "★".repeat(n)+"☆".repeat(5-n)}
-function key(n){return n.trim().toLowerCase()}
-function show(v){["home","detail","formView"].forEach(function(x){$(x).classList.toggle("hide",x!==v)});window.scrollTo(0,0)}
+function key(n){return String(n).trim().toLowerCase()}
+function hash(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return h}
+function col(n){var c=["#E8B04B","#7FC8A9","#8FB8E8","#E09AA5","#B7A3E3","#E8946B"];return c[hash(key(n))%c.length]}
+function ini(n){var w=String(n).trim().split(/\s+/);return ((w[0]||"?")[0]+(w[1]?w[1][0]:"")).toUpperCase()}
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")}
 
+function show(v){
+  ["welcome","home","detail","formView"].forEach(function(x){$(x).classList.toggle("hide",x!==v)});
+  $("nHome").classList.toggle("on",v==="welcome");
+  $("nList").classList.toggle("on",v==="home"||v==="detail");
+  window.scrollTo(0,0);
+}
 function groups(){
   var g={};
   entries.forEach(function(e){var k=key(e.restaurant);(g[k]=g[k]||{name:e.restaurant,items:[]}).items.push(e)});
   return Object.keys(g).map(function(k){return g[k]}).sort(function(a,b){return a.name.localeCompare(b.name)});
 }
-function renderList(){
-  var q=key($("search").value), gs=groups().filter(function(g){return !q||key(g.name).indexOf(q)>-1});
+function bindRest(box){Array.prototype.forEach.call(box.querySelectorAll(".rest"),function(el){el.onclick=function(){openRest(el.getAttribute("data-k"))}})}
+
+function goWelcome(){
+  var h=new Date().getHours(),g=h<12?"Good morning":h<18?"Good afternoon":"Good evening",nm=sget("bitelog:name")||"",gs=groups();
+  $("greet").textContent=g+(nm?", "+nm:"")+".";
+  $("stats").textContent=entries.length?entries.length+" dish"+(entries.length>1?"es":"")+" logged across "+gs.length+" restaurant"+(gs.length>1?"s":"")+".":"Nothing logged yet. Your first entry takes about 30 seconds.";
+  $("nameBox").classList.toggle("hide",!!nm);
+  var rec=entries.slice().sort(function(a,b){return b.id-a.id}).slice(0,3);
+  $("recent").innerHTML=rec.length?'<h3>Recently logged</h3>'+rec.map(function(e){return '<div class="card rest" data-k="'+esc(key(e.restaurant))+'"><div class="av" style="background:'+col(e.restaurant)+'">'+esc(ini(e.restaurant))+'</div><div class="rb"><b>'+esc(e.dish)+'</b><div class="mute">'+esc(e.restaurant)+'</div></div><div class="stars">'+stars(e.rating)+'</div></div>'}).join(""):"";
+  bindRest($("recent"));
+  $("sampleW").innerHTML=entries.length?"":'<button id="sampleBtn" style="margin-top:14px">Load sample data</button>';
+  var sb=$("sampleBtn");if(sb)sb.onclick=function(){sample();goWelcome()};
+  show("welcome");
+}
+function goList(){
+  var q=key($("search").value),gs=groups().filter(function(g){return !q||key(g.name).indexOf(q)>-1});
   $("restNames").innerHTML=groups().map(function(g){return '<option value="'+esc(g.name)+'">'}).join("");
   if(!gs.length){
-    $("list").innerHTML='<div class="empty">'+(entries.length?'No restaurant matches “'+esc($("search").value)+'”.':'No dishes logged yet.<br>Tap <b>+ Add</b> to log your first one.<br><br><button id="sample">Load sample data</button>')+'</div>';
-    var s=$("sample");if(s)s.onclick=sample;return;
+    $("list").innerHTML='<div class="empty">'+(entries.length?'No restaurant matches “'+esc($("search").value)+'”.':'Your journal is empty.<br>Log your first dish to get started.')+'</div>';
+  }else{
+    $("list").innerHTML=gs.map(function(g){
+      var avg=g.items.reduce(function(a,e){return a+e.rating},0)/g.items.length;
+      return '<div class="card rest" data-k="'+esc(key(g.name))+'"><div class="av" style="background:'+col(g.name)+'">'+esc(ini(g.name))+'</div><div class="rb"><b>'+esc(g.name)+'</b><div class="mute">'+g.items.length+' dish'+(g.items.length>1?'es':'')+' logged</div></div><div class="stars">'+stars(Math.round(avg))+'</div></div>';
+    }).join("");
+    bindRest($("list"));
   }
-  $("list").innerHTML=gs.map(function(g){
-    var avg=g.items.reduce(function(a,e){return a+e.rating},0)/g.items.length;
-    return '<div class="card rest" data-k="'+esc(key(g.name))+'"><div><b>'+esc(g.name)+'</b><div class="mute">'+g.items.length+' dish'+(g.items.length>1?'es':'')+' logged</div></div><div class="stars">'+stars(Math.round(avg))+'</div></div>';
-  }).join("");
-  Array.prototype.forEach.call($("list").querySelectorAll(".rest"),function(el){el.onclick=function(){openRest(el.getAttribute("data-k"))}});
+  show("home");
 }
 function dishCard(e){
   return '<div class="card dish">'+(e.photo?'<img src="'+e.photo+'" alt="'+esc(e.dish)+'">':'')+
-  '<div class="body"><div class="top"><b>'+esc(e.dish)+'</b><span class="stars">'+stars(e.rating)+'</span></div>'+
+  '<div class="body"><div class="top2"><b>'+esc(e.dish)+'</b><span class="stars">'+stars(e.rating)+'</span></div>'+
   '<div class="mute">'+esc(e.date||"")+'</div>'+(e.notes?'<div>'+esc(e.notes)+'</div>':'')+
   '<button class="link" data-del="'+e.id+'">Delete</button></div></div>';
 }
 function openRest(k){
   var items=entries.filter(function(e){return key(e.restaurant)===k});
-  if(!items.length){show("home");renderList();return}
+  if(!items.length){goList();return}
   items.sort(function(a,b){return b.rating-a.rating||(b.date||"").localeCompare(a.date||"")});
-  var name=items[0].restaurant;
-  var sec=[["good","❤️ Loved it (4–5★)",function(e){return e.rating>=4}],["mid","😐 It was okay (3★)",function(e){return e.rating===3}],["bad","👎 Didn't like (1–2★)",function(e){return e.rating<=2}]];
-  var html='<button class="link" id="back">← All restaurants</button><h1>'+esc(name)+'</h1><p class="sub">What you’ve had here: '+items.length+' dish'+(items.length>1?'es':'')+'</p><button class="primary" id="addHere">+ Log another dish</button><div class="card ai"><b>✨ What should I order?</b><div class="mute">Gemini reads your ratings and notes. Paste the menu for the best results, or leave it empty and it will try to look the menu up.</div><textarea id="menuTxt" rows="3" placeholder="Paste menu items here (optional)"></textarea><button class="primary" id="aiBtn">Get suggestions</button><div id="aiOut"></div></div>';
+  var name=items[0].restaurant,avg=items.reduce(function(a,e){return a+e.rating},0)/items.length;
+  var sec=[["good","Loved (4–5 stars)",function(e){return e.rating>=4}],["mid","It was okay (3 stars)",function(e){return e.rating===3}],["bad","Didn't like (1–2 stars)",function(e){return e.rating<=2}]];
+  var html='<button class="link" id="back">← All restaurants</button><div class="head"><h1>'+esc(name)+'</h1><p class="mute">'+items.length+' dish'+(items.length>1?'es':'')+' logged · average <span class="stars">'+stars(Math.round(avg))+'</span></p><button class="primary" id="addHere">+ Log another dish</button></div>'+
+  '<div class="card ai"><div class="tag">Gemini · What should I try next?</div><div class="mute">Looks up this restaurant’s current menu online and compares it with what you’ve rated.</div><input type="text" id="cityIn" placeholder="Your city (e.g. San Jose, CA)"><button class="primary" id="aiBtn">Suggest dishes to try</button><div id="aiOut"></div></div>';
   sec.forEach(function(s){var l=items.filter(s[2]);if(l.length)html+='<h2 class="'+s[0]+'">'+s[1]+'</h2>'+l.map(dishCard).join("")});
   $("detail").innerHTML=html;show("detail");
-  $("back").onclick=function(){show("home");renderList()};
+  $("cityIn").value=sget("bitelog:city")||"";
+  $("back").onclick=goList;
   $("addHere").onclick=function(){openForm(name)};
   $("aiBtn").onclick=function(){suggest(name,items)};
   Array.prototype.forEach.call($("detail").querySelectorAll("[data-del]"),function(b){b.onclick=function(){
     if(!confirm("Delete this dish?"))return;
     entries=entries.filter(function(e){return String(e.id)!==b.getAttribute("data-del")});persist();openRest(k)}});
 }
-function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")}
+function showAI(out,j){
+  var h='<div class="aitext">'+fmt(j.text)+'</div>';
+  if(j.sources&&j.sources.length)h+='<p class="mute" style="margin-top:10px"><b>Sources:</b> '+j.sources.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.title||x.url)+'</a>'}).join(" · ")+'</p>';
+  if(j.suggestionsHtml)h+='<iframe sandbox class="sugg" title="Google Search suggestions" srcdoc="'+esc(j.suggestionsHtml)+'"></iframe>';
+  h+='<p class="mute" style="margin-top:10px">'+(j.searched?'Menu looked up with Google Search.':'Menu could not be verified online.')+' AI can make mistakes. Check the real menu and allergens.</p>';
+  out.innerHTML=h;
+}
 function suggest(name,items){
-  var out=$("aiOut"),btn=$("aiBtn");
-  btn.disabled=true;out.innerHTML='<p class="mute">Gemini is thinking…</p>';
+  var out=$("aiOut"),btn=$("aiBtn"),city=$("cityIn").value.trim();sset("bitelog:city",city);
+  var ck="bitelog:ai:"+key(name)+"|"+key(city)+"|"+items.map(function(e){return e.id}).join(",");
+  try{var c=JSON.parse(sget(ck)||"null");if(c&&Date.now()-c.t<864e5){showAI(out,c.j);return}}catch(e){}
+  btn.disabled=true;out.innerHTML='<p class="mute">Looking up the '+esc(name)+' menu…</p>';
   fetch("/api/suggest",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-    restaurant:name,menu:$("menuTxt").value,
-    dishes:items.map(function(e){return {dish:e.dish,rating:e.rating,notes:e.notes}})})})
+    restaurant:name,city:city,dishes:items.map(function(e){return {dish:e.dish,rating:e.rating,notes:e.notes}})})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||"failed");return j})})
-  .then(function(j){out.innerHTML='<div class="aitext">'+fmt(j.text)+'</div><p class="mute">AI can make mistakes. Check the real menu and allergens.</p>'})
+  .then(function(j){showAI(out,j);sset(ck,JSON.stringify({t:Date.now(),j:j}))})
   .catch(function(){
     var good=items.filter(function(e){return e.rating>=4}).map(function(e){return e.dish}),
         bad=items.filter(function(e){return e.rating<=2}).map(function(e){return e.dish});
     out.innerHTML='<div class="aitext"><p class="mute">AI suggestions are unavailable right now. Here is your history:</p><b>Order again:</b> '+(good.length?esc(good.join(", ")):"nothing rated 4+ yet")+'<br><b>Skip:</b> '+(bad.length?esc(bad.join(", ")):"nothing rated 2 or below")+'</div>'})
   .then(function(){btn.disabled=false});
 }
+
+var RL=["Tap a star to rate","Poor","Fair","Good","Great","Outstanding"];
 function drawStars(){
   $("starpick").innerHTML=[1,2,3,4,5].map(function(n){return '<button type="button" data-n="'+n+'" class="'+(n<=rating?"on":"")+'" aria-label="'+n+' stars">★</button>'}).join("");
+  $("rlabel").textContent=RL[rating];
   Array.prototype.forEach.call($("starpick").querySelectorAll("button"),function(b){b.onclick=function(){rating=+b.getAttribute("data-n");drawStars()}});
 }
-function openForm(name){
-  $("form").reset();rating=0;photo="";$("preview").style.display="none";$("err").textContent="";
-  $("fRest").value=name||"";$("fDate").value=new Date().toISOString().slice(0,10);
-  drawStars();show("formView");
-}
-$("fPhoto").onchange=function(ev){
-  var f=ev.target.files[0];if(!f){photo="";$("preview").style.display="none";return}
+function setPhoto(file){
+  if(!file||!/^image\//.test(file.type))return;
   var r=new FileReader();
   r.onload=function(){var im=new Image();im.onload=function(){
     var m=720,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
     c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
     c.getContext("2d").drawImage(im,0,0,c.width,c.height);
-    photo=c.toDataURL("image/jpeg",0.7);$("preview").src=photo;$("preview").style.display="block"};
+    photo=c.toDataURL("image/jpeg",0.72);$("preview").src=photo;$("preview").style.display="block";
+    $("rmPhoto").classList.remove("hide");$("dropTxt").textContent="Photo added. Paste or drop another to replace it."};
     im.src=r.result};
-  r.readAsDataURL(f);
-};
+  r.readAsDataURL(file);
+}
+function clearPhoto(){photo="";$("preview").style.display="none";$("rmPhoto").classList.add("hide");$("dropTxt").textContent="Paste an image (Ctrl/⌘ + V), drop one here, or";$("fPhoto").value=""}
+function openForm(name){
+  $("form").reset();rating=0;clearPhoto();$("err").textContent="";
+  $("fRest").value=name||"";$("fDate").value=new Date().toISOString().slice(0,10);
+  $("restNames").innerHTML=groups().map(function(g){return '<option value="'+esc(g.name)+'">'}).join("");
+  drawStars();show("formView");
+}
+document.addEventListener("paste",function(ev){
+  if($("formView").classList.contains("hide"))return;
+  var it=(ev.clipboardData&&ev.clipboardData.items)||[];
+  for(var i=0;i<it.length;i++)if(it[i].type.indexOf("image")===0){setPhoto(it[i].getAsFile());ev.preventDefault();return}
+});
+var dz=$("drop");
+dz.ondragover=function(e){e.preventDefault();dz.classList.add("over")};
+dz.ondragleave=function(){dz.classList.remove("over")};
+dz.ondrop=function(e){e.preventDefault();dz.classList.remove("over");if(e.dataTransfer.files[0])setPhoto(e.dataTransfer.files[0])};
+$("pick").onclick=function(){$("fPhoto").click()};
+$("fPhoto").onchange=function(e){setPhoto(e.target.files[0])};
+$("rmPhoto").onclick=clearPhoto;
 $("save").onclick=function(){
   var rest=$("fRest").value.trim(),dish=$("fDish").value.trim();
   if(!rest||!dish){$("err").textContent="Please enter a restaurant and a dish.";return}
@@ -175,16 +287,17 @@ $("save").onclick=function(){
   entries.push({id:Date.now()+Math.floor(Math.random()*1000),restaurant:rest,dish:dish,rating:rating,notes:$("fNotes").value.trim(),date:$("fDate").value,photo:photo});
   if(persist())openRest(key(rest));
 };
-$("addBtn").onclick=function(){openForm($("search").value)};
-$("cancel").onclick=function(){show("home");renderList()};
-$("search").oninput=renderList;
 function sample(){
   var d=new Date().toISOString().slice(0,10),id=Date.now();
-  [["Cheesecake Factory","Chicken Madeira",5,"Amazing sauce, order it again."],["Cheesecake Factory","Avocado Egg Rolls",4,"Great starter to share."],["Cheesecake Factory","Pasta Napoletana",2,"Bland and heavy."],["Cheesecake Factory","Fresh Strawberry Cheesecake",5,"Worth saving room."],["Chipotle","Burrito Bowl",3,"Fine, nothing special."]].forEach(function(x,i){
+  [["Cheesecake Factory","Chicken Madeira",5,"Rich sauce, would order again."],["Cheesecake Factory","Avocado Egg Rolls",4,"Great starter to share."],["Cheesecake Factory","Pasta Napoletana",2,"Bland and heavy."],["Cheesecake Factory","Fresh Strawberry Cheesecake",5,"Worth saving room."],["Chipotle","Burrito Bowl",3,"Fine, nothing special."]].forEach(function(x,i){
     entries.push({id:id+i,restaurant:x[0],dish:x[1],rating:x[2],notes:x[3],date:d,photo:""})});
-  persist();renderList();
+  persist();
 }
-load();renderList();
+$("brand").onclick=goWelcome;$("nHome").onclick=goWelcome;$("nList").onclick=goList;
+$("nAdd").onclick=function(){openForm("")};$("wLog").onclick=function(){openForm("")};$("wBrowse").onclick=goList;
+$("cancel").onclick=goWelcome;$("search").oninput=function(){var y=window.scrollY;goList();window.scrollTo(0,y)};
+$("nameSave").onclick=function(){var v=$("nameIn").value.trim().slice(0,30);if(v){sset("bitelog:name",v);goWelcome()}};
+load();goWelcome();
 })();
 </script>
 </body>
