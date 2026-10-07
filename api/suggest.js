@@ -5,7 +5,7 @@
 // no-search answer and tells the user the menu was not verified online.
 
 // Models are tried in order. If one is overloaded (503) or unavailable, the next is used.
-const DEFAULTS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+const DEFAULTS = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
 const MODELS = [...new Set([process.env.GEMINI_MODEL, ...DEFAULTS].filter(Boolean).map((m) => m.trim()))];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const SEARCH_ON = process.env.ENABLE_SEARCH !== "false";
@@ -54,12 +54,13 @@ async function call(key, model, prompt, useSearch) {
 async function callWithFallback(key, prompt, useSearch) {
   let last = { ok: false, status: 0, detail: "no models" };
   for (const m of MODELS) {
-    for (let attempt = 0; attempt < 2; attempt++) {
       last = await call(key, m, prompt, useSearch);
       if (last.ok) return last;
-      if (last.status === 503 || last.status === 500) { await sleep(800); continue; } // overloaded: retry once
-      break; // other errors: move on to the next model
-    }
+      if (last.status === 503 || last.status === 500) { 
+        await sleep(1000); 
+        last = await call(key, m, prompt, useSearch);
+        if (last.ok) return last;
+      }
     // Search quota / billing problems will not be fixed by switching models.
     if (useSearch && (last.status === 429 || /quota|billing/i.test(last.detail || ""))) break;
   }
