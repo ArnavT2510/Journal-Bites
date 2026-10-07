@@ -236,10 +236,10 @@ function suggest(name,items){
     restaurant:name,city:city,dishes:items.map(function(e){return {dish:e.dish,rating:e.rating,notes:e.notes}})})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||"failed");return j})})
   .then(function(j){showAI(out,j);sset(ck,JSON.stringify({t:Date.now(),j:j}))})
-  .catch(function(){
+  .catch(function(err){
     var good=items.filter(function(e){return e.rating>=4}).map(function(e){return e.dish}),
         bad=items.filter(function(e){return e.rating<=2}).map(function(e){return e.dish});
-    out.innerHTML='<div class="aitext"><p class="mute">AI suggestions are unavailable right now. Here is your history:</p><b>Order again:</b> '+(good.length?esc(good.join(", ")):"nothing rated 4+ yet")+'<br><b>Skip:</b> '+(bad.length?esc(bad.join(", ")):"nothing rated 2 or below")+'</div>'})
+    out.innerHTML='<div class="aitext"><p class="mute">AI suggestions are unavailable right now. Here is your history:</p><p class="mute">Details: '+esc(err&&err.message)+'</p><b>Order again:</b> '+(good.length?esc(good.join(", ")):"nothing rated 4+ yet")+'<br><b>Skip:</b> '+(bad.length?esc(bad.join(", ")):"nothing rated 2 or below")+'</div>'})
   .then(function(){btn.disabled=false});
 }
 
