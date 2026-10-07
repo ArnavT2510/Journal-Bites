@@ -44,7 +44,8 @@ async function call(key, prompt, useSearch) {
   });
   const data = await r.json().catch(() => ({}));
   const out = parse(data);
-  return { ok: r.ok && !!out.text, status: r.status, ...out };
+  const detail = (data.error && data.error.message) ? String(data.error.message).slice(0, 300) : (r.ok && !out.text ? "empty response" : "");
+  return { ok: r.ok && !!out.text, status: r.status, detail, ...out };
 }
 
 module.exports = async (req, res) => {
@@ -81,9 +82,13 @@ SKIP: 1-2 menu dishes likely to disappoint them, based on what they disliked.
 End with one short reminder to check allergens and the current menu.`;
 
   try {
-    let out = SEARCH_ON ? await call(key, prompt(true), true) : { ok: false };
+    const first = SEARCH_ON ? await call(key, prompt(true), true) : { ok: false };
+    let out = first;
     if (!out.ok) out = await call(key, prompt(false), false); // fallback without search
-    if (!out.ok) return res.status(502).json({ error: "Gemini request failed (" + out.status + ")" });
+    if (!out.ok) {
+      console.error("Gemini failed", { model: MODEL, search: first.status + " " + (first.detail || ""), plain: out.status + " " + (out.detail || "") });
+      return res.status(502).json({ error: "Gemini error " + out.status + ": " + (out.detail || "no details") + (first.detail ? " | search attempt: " + first.detail : "") });
+    }
     return res.status(200).json({
       text: out.text, sources: out.sources, suggestionsHtml: out.suggestionsHtml, searched: !!out.searched
     });
