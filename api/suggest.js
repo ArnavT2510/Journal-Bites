@@ -32,7 +32,7 @@ const CTRL = new RegExp("[" + String.fromCharCode(0) + "-" + String.fromCharCode
 function clean(s, n) { return String(s == null ? "" : s).replace(CTRL, " ").slice(0, n); }
 
 // ---------------------------------------------------------------- Gemini ---
-const GEMINI_DEFAULTS = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
+const GEMINI_DEFAULTS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
 const GEMINI_MODELS = [...new Set([process.env.GEMINI_MODEL, ...GEMINI_DEFAULTS].filter(Boolean).map((m) => m.trim()))];
 const GEMINI_SEARCH_ON = process.env.ENABLE_SEARCH !== "false";
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
