@@ -4,7 +4,10 @@
 // If search is unavailable (e.g. a free-tier key), it falls back to a
 // no-search answer and tells the user the menu was not verified online.
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.7-flash";
+// Models are tried in order. If one is overloaded (503) or unavailable, the next is used.
+const DEFAULTS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+const MODELS = [...new Set([process.env.GEMINI_MODEL, ...DEFAULTS].filter(Boolean).map((m) => m.trim()))];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const SEARCH_ON = process.env.ENABLE_SEARCH !== "false";
 const URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
 
@@ -34,8 +37,8 @@ function parse(data) {
   return { text: text.trim(), sources: sources.slice(0, 6), suggestionsHtml, searched };
 }
 
-async function call(key, prompt, useSearch) {
-  const body = { model: MODEL, input: prompt };
+async function call(key, model, prompt, useSearch) {
+  const body = { model, input: prompt };
   if (useSearch) body.tools = [{ type: "google_search" }];
   const r = await fetch(URL, {
     method: "POST",
@@ -46,6 +49,21 @@ async function call(key, prompt, useSearch) {
   const out = parse(data);
   const detail = (data.error && data.error.message) ? String(data.error.message).slice(0, 300) : (r.ok && !out.text ? "empty response" : "");
   return { ok: r.ok && !!out.text, status: r.status, detail, ...out };
+}
+
+async function callWithFallback(key, prompt, useSearch) {
+  let last = { ok: false, status: 0, detail: "no models" };
+  for (const m of MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      last = await call(key, m, prompt, useSearch);
+      if (last.ok) return last;
+      if (last.status === 503 || last.status === 500) { await sleep(800); continue; } // overloaded: retry once
+      break; // other errors: move on to the next model
+    }
+    // Search quota / billing problems will not be fixed by switching models.
+    if (useSearch && (last.status === 429 || /quota|billing/i.test(last.detail || ""))) break;
+  }
+  return last;
 }
 
 module.exports = async (req, res) => {
@@ -82,11 +100,11 @@ SKIP: 1-2 menu dishes likely to disappoint them, based on what they disliked.
 End with one short reminder to check allergens and the current menu.`;
 
   try {
-    const first = SEARCH_ON ? await call(key, prompt(true), true) : { ok: false };
+    const first = SEARCH_ON ? await callWithFallback(key, prompt(true), true) : { ok: false };
     let out = first;
-    if (!out.ok) out = await call(key, prompt(false), false); // fallback without search
+    if (!out.ok) out = await callWithFallback(key, prompt(false), false); // fallback without search
     if (!out.ok) {
-      console.error("Gemini failed", { model: MODEL, search: first.status + " " + (first.detail || ""), plain: out.status + " " + (out.detail || "") });
+      console.error("Gemini failed", { models: MODELS.join(","), search: first.status + " " + (first.detail || ""), plain: out.status + " " + (out.detail || "") });
       return res.status(502).json({ error: "Gemini error " + out.status + ": " + (out.detail || "no details") + (first.detail ? " | search attempt: " + first.detail : "") });
     }
     return res.status(200).json({
