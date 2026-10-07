@@ -5,6 +5,10 @@
 // no-search answer and tells the user the menu was not verified online.
 
 // Models are tried in order. If one is overloaded (503) or unavailable, the next is used.
+// gemini-2.5-flash-lite is the cheapest Gemini model ($0.10 input / $0.40 output
+// per 1M tokens) and has the most generous free tier (15 RPM / 1,000 req/day).
+// Override with the GEMINI_MODEL env var. Before relying on a model, check that
+// it shows non-zero limits on your project's rate-limit dashboard in AI Studio.
 const DEFAULTS = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
 const MODELS = [...new Set([process.env.GEMINI_MODEL, ...DEFAULTS].filter(Boolean).map((m) => m.trim()))];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -51,16 +55,22 @@ async function call(key, model, prompt, useSearch) {
   return { ok: r.ok && !!out.text, status: r.status, detail, ...out };
 }
 
+// Call budget per user click (worst case):
+//   with search:    2 models x (1 try + 1 retry on 503/500 only)
+//   without search: same, once  (set ENABLE_SEARCH=false on a free-tier key,
+//                   since search grounding isn't available there anyway)
+// A 429 is never retried on the same model: quotas are per-model, so we move
+// straight to the next model instead of burning another call on the same one.
 async function callWithFallback(key, prompt, useSearch) {
   let last = { ok: false, status: 0, detail: "no models" };
   for (const m of MODELS) {
+    last = await call(key, m, prompt, useSearch);
+    if (last.ok) return last;
+    if (last.status === 503 || last.status === 500) {
+      await sleep(1000); // transient server error: one retry, then move on
       last = await call(key, m, prompt, useSearch);
       if (last.ok) return last;
-      if (last.status === 503 || last.status === 500) { 
-        await sleep(1000); 
-        last = await call(key, m, prompt, useSearch);
-        if (last.ok) return last;
-      }
+    }
     // Search quota / billing problems will not be fixed by switching models.
     if (useSearch && (last.status === 429 || /quota|billing/i.test(last.detail || ""))) break;
   }
