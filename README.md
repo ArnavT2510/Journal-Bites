@@ -1,26 +1,19 @@
-# Bite Log
+# Bite.ai
 
-A simple restaurant food journal. Log dishes with a 1-5 star rating, a photo and notes. Search a restaurant to see what you loved, found okay, or disliked. Gemini reads your notes and suggests what to order next.
+A premium, smart dining journal and food recommendation app. Log dishes with a 1-5 star rating, photo, and personal tasting notes. Search restaurants to view your taste profile or discover personalized menu recommendations powered by Bite.ai.
 
 ## Features
 - Log dishes per restaurant (rating, photo, notes, date)
-- Dishes auto-sorted into Loved (4-5★), Okay (3★), Didn't like (1-2★)
-- "What should I try next?" powered by Google Gemini: it searches the web for the restaurant's current menu (optionally using your city) and suggests dishes you haven't tried yet, with source links
-- Works without AI too: if Gemini is unavailable, it shows your top-rated and lowest-rated dishes
-- Private: data stays in your browser (localStorage), no accounts
+- Automatic sorting into Loved (4-5★), Okay (3★), and Didn't like (1-2★)
+- **Bite.ai Recommendations**: Powered by Bite.ai (Google Gemini API with Grounding Search), Bite.ai scans live restaurant menus online and cross-references them with your taste profile to suggest ideal dishes to try next.
+- Fallback intelligence: Works offline or without AI by generating dish breakdowns based on your saved history.
+- Private & Fast: Data stays local in your browser (`localStorage`).
 
 ## Tech
-HTML, CSS, JavaScript, localStorage, Canvas API, Vercel serverless function (Node.js), Google Gemini API (Interactions API with Grounding with Google Search).
+HTML5, Modern CSS (Glassmorphism, View Transitions), JavaScript, Canvas API, Vercel Serverless Functions, Bite.ai Engine (Google Gemini API with Search Grounding).
 
-## Run / deploy
-1. Get a Gemini API key at https://aistudio.google.com/app/apikey
-2. Push this folder to GitHub, then import the repo in Vercel (no build settings needed).
-3. In Vercel: Settings → Environment Variables → add `GEMINI_API_KEY` (optional: `GEMINI_MODEL` sets the preferred model; the function automatically uses `gemini-3.1-flash-lite` by default and retries with `gemini-3.5-flash-lite` if it is overloaded; `ENABLE_SEARCH=false` turns off web search, recommended on a free-tier key). Redeploy.
-4. Local testing: `npx vercel dev` (with `GEMINI_API_KEY` set in a `.env` file). Never commit your key.
-
-## Notes
-- The key lives only on the server (`api/suggest.js`), never in the browser.
-- AI suggestions can be wrong. Always check the real menu and allergens.
-
-## Cost note
-Grounding with Google Search is not available on the Gemini API free tier (as of Oct 2026). With a free key the app still works, but falls back to a no-search answer and labels the menu as unverified. With a paid key, search is billed per search query after a monthly free allowance. Check https://ai.google.dev/gemini-api/docs/pricing before enabling billing, and set a budget alert.
+## Setup & Deployment
+1. Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Deploy this repository to Vercel.
+3. Configure the `GEMINI_API_KEY` environment variable in Vercel settings.
+4. Run locally with `npx vercel dev`.
